@@ -153,8 +153,8 @@ export default function Home() {
               <img src={item.image} alt={index === 1 ? "Dalila carefully crafting a jewelry piece" : "Dalila wearing blue heart earrings at her worktable"} />
             )}
             <div className="hero-shade" />
+            <img className="hero-logo" src="/images/dalila-logo.png" alt="Dalila Fine Designs" />
             <div className="hero-copy">
-              <img className="hero-logo" src="/images/dalila-logo.png" alt="Dalila Fine Designs" />
               <p className="eyebrow">{item.eyebrow}</p>
               <h1>{item.title}</h1>
               <p>{item.copy}</p>
