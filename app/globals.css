@@ -117,6 +117,6 @@ footer { display:grid; grid-template-columns:1.4fr repeat(3,1fr); gap:45px; padd
   .hero-slide .branded-portrait{top:0;right:2%;bottom:auto;width:96%;height:48%;object-fit:cover;object-position:center 28%}
   .branded-slide .hero-shade{background:linear-gradient(0deg,rgba(31,10,4,.96) 0%,rgba(31,10,4,.84) 48%,rgba(31,10,4,.18) 78%,transparent 100%)}
   .hero-video{object-position:center}
-  .hero-logo{left:50%;right:auto;top:44px;width:276px!important;height:276px!important;margin:0;border-radius:36px;transform:translateX(-50%) rotate(-2deg)}
+  .hero-logo{left:50%;right:auto;top:44px;width:184px!important;height:184px!important;margin:0;border-radius:30px;transform:translateX(-50%) rotate(-2deg)}
 }
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}.hero-slide:not(.active){display:none}}
