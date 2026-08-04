@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getMerchMockup } from "@/lib/merch-mockups";
 
 const slides = [
   {
@@ -252,7 +253,7 @@ export default function Home() {
                 <article className="product-card" key={product.id}>
                   <div className="product-art mint has-photo">
                     <span className="product-badge">Logo merch</span>
-                    <img className="product-photo merch-photo" src={selected.image || product.image} alt={`${product.name} mockup`} />
+                    <img className="product-photo merch-photo" src={getMerchMockup(product.name, selected.name, selected.image || product.image)} alt={`${selected.name} mockup`} />
                   </div>
                   <div className="product-info"><div><p>Printful merch</p><h3>{product.name}</h3><strong>${selected.retailPrice.toFixed(2)}</strong></div></div>
                   <label className="merch-variant-label" htmlFor={`merch-variant-${product.id}`}>Choose size / style</label>
