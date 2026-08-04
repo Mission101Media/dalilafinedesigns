@@ -83,6 +83,7 @@ export default function Home() {
     return status === "success" || status === "canceled" ? status : "";
   });
   const [merchProducts, setMerchProducts] = useState<MerchProduct[]>([]);
+  const [selectedMerchVariants, setSelectedMerchVariants] = useState<Record<number, number>>({});
 
   useEffect(() => {
     const timer = window.setInterval(() => setSlide((current) => (current + 1) % slides.length), 6500);
@@ -192,27 +193,6 @@ export default function Home() {
         </div>
       </section>
 
-      {merchProducts.length > 0 && (
-        <section className="products-section merch-section section" id="merch" aria-labelledby="merch-title">
-          <div className="section-heading">
-            <div><p className="kicker">Wear the happy</p><h2 id="merch-title">Dalila Fine Designs merch</h2></div>
-            <span className="text-link">Printed & shipped by Printful</span>
-          </div>
-          <div className="product-grid">
-            {merchProducts.flatMap((product) => product.variants.map((variant) => ({ ...variant, productName: product.name, productImage: product.image }))).slice(0, 12).map((variant) => (
-              <article className="product-card" key={variant.id}>
-                <div className="product-art mint has-photo">
-                  <span className="product-badge">Logo merch</span>
-                  <img className="product-photo merch-photo" src={variant.image || variant.productImage} alt={variant.name} />
-                </div>
-                <div className="product-info"><div><p>{variant.productName}</p><h3>{variant.name}</h3><strong>${variant.retailPrice.toFixed(2)}</strong></div></div>
-                <button className="product-add-button" onClick={() => addToCart(`printful:${variant.id}`)} aria-label={`Add ${variant.name} to bag`}>Add to Bag <span>+</span></button>
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
-
       <section className="category-section section" aria-labelledby="category-title">
         <p className="kicker">Pick your happy</p>
         <h2 id="category-title">Shop by category</h2>
@@ -257,6 +237,35 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {merchProducts.length > 0 && (
+        <section className="products-section merch-section section" id="merch" aria-labelledby="merch-title">
+          <div className="section-heading">
+            <div><p className="kicker">Wear the happy</p><h2 id="merch-title">Dalila Fine Designs merch</h2></div>
+            <span className="text-link">Printed & shipped by Printful</span>
+          </div>
+          <div className="product-grid merch-grid">
+            {merchProducts.slice(0, 4).map((product) => {
+              const selectedId = selectedMerchVariants[product.id] ?? product.variants[0].id;
+              const selected = product.variants.find((variant) => variant.id === selectedId) ?? product.variants[0];
+              return (
+                <article className="product-card" key={product.id}>
+                  <div className="product-art mint has-photo">
+                    <span className="product-badge">Logo merch</span>
+                    <img className="product-photo merch-photo" src={selected.image || product.image} alt={`${product.name} mockup`} />
+                  </div>
+                  <div className="product-info"><div><p>Printful merch</p><h3>{product.name}</h3><strong>${selected.retailPrice.toFixed(2)}</strong></div></div>
+                  <label className="merch-variant-label" htmlFor={`merch-variant-${product.id}`}>Choose size / style</label>
+                  <select className="merch-variant-select" id={`merch-variant-${product.id}`} value={selected.id} onChange={(event) => setSelectedMerchVariants((current) => ({ ...current, [product.id]: Number(event.target.value) }))}>
+                    {product.variants.map((variant) => <option value={variant.id} key={variant.id}>{variant.name} — ${variant.retailPrice.toFixed(2)}</option>)}
+                  </select>
+                  <button className="product-add-button" onClick={() => addToCart(`printful:${selected.id}`)} aria-label={`Add ${selected.name} to bag`}>Add selected size to Bag <span>+</span></button>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <section className="about section" id="about">
         <div className="about-image">
