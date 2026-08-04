@@ -1,5 +1,6 @@
 import Stripe from "stripe";
 import { getPrintfulVariant } from "@/lib/printful";
+import { getMerchMockup } from "@/lib/merch-mockups";
 
 const catalog = {
   "Heart Shape Earrings": { unitAmount: 1800, description: "Handmade blue heart earrings" },
@@ -28,6 +29,7 @@ export async function POST(request: Request) {
       quantities.set(value, (quantities.get(value) ?? 0) + 1);
     }
 
+    const origin = new URL(request.url).origin;
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
     for (const [key, quantity] of quantities) {
       if (key in catalog) {
@@ -35,6 +37,7 @@ export async function POST(request: Request) {
         lineItems.push({ quantity, price_data: { currency: "usd", unit_amount: catalog[name].unitAmount, product_data: { name, description: catalog[name].description } } });
       } else {
         const variant = await getPrintfulVariant(Number(key.split(":")[1]));
+        const mockup = getMerchMockup(variant.name, variant.name, variant.image);
         lineItems.push({
           quantity,
           price_data: {
@@ -42,7 +45,7 @@ export async function POST(request: Request) {
             unit_amount: Math.round(variant.retailPrice * 100),
             product_data: {
               name: variant.name,
-              images: variant.image ? [variant.image] : undefined,
+              images: mockup ? [new URL(mockup, origin).href] : undefined,
               metadata: { fulfillment: "printful", printful_sync_variant_id: String(variant.id) },
             },
           },
@@ -51,7 +54,6 @@ export async function POST(request: Request) {
     }
 
     const stripe = new Stripe(secretKey, { httpClient: Stripe.createFetchHttpClient() });
-    const origin = new URL(request.url).origin;
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: lineItems,
