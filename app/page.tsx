@@ -85,6 +85,7 @@ export default function Home() {
   });
   const [merchProducts, setMerchProducts] = useState<MerchProduct[]>([]);
   const [selectedMerchVariants, setSelectedMerchVariants] = useState<Record<number, number>>({});
+  const [enlargedMockup, setEnlargedMockup] = useState<{ src: string; alt: string } | null>(null);
 
   useEffect(() => {
     const timer = window.setInterval(() => setSlide((current) => (current + 1) % slides.length), 6500);
@@ -251,9 +252,12 @@ export default function Home() {
               const selected = product.variants.find((variant) => variant.id === selectedId) ?? product.variants[0];
               return (
                 <article className="product-card" key={product.id}>
-                  <div className="product-art mint has-photo">
+                  <div className="product-art merch-art mint has-photo">
                     <span className="product-badge">Logo merch</span>
-                    <img className="product-photo merch-photo" src={getMerchMockup(product.name, selected.name, selected.image || product.image)} alt={`${selected.name} mockup`} />
+                    <button className="merch-image-button" type="button" onClick={() => setEnlargedMockup({ src: getMerchMockup(product.name, selected.name, selected.image || product.image), alt: `${selected.name} mockup` })} aria-label={`Enlarge ${selected.name} mockup`}>
+                      <img className="product-photo merch-photo" src={getMerchMockup(product.name, selected.name, selected.image || product.image)} alt={`${selected.name} mockup`} />
+                      <span className="merch-zoom-hint">⌕ Enlarge</span>
+                    </button>
                   </div>
                   <div className="product-info"><div><p>Printful merch</p><h3>{product.name}</h3><strong>${selected.retailPrice.toFixed(2)}</strong></div></div>
                   <label className="merch-variant-label" htmlFor={`merch-variant-${product.id}`}>Choose size / style</label>
@@ -324,6 +328,13 @@ export default function Home() {
           </div>
         </>}
       </aside>
+
+      {enlargedMockup && (
+        <div className="mockup-lightbox" role="dialog" aria-modal="true" aria-label="Enlarged merchandise mockup" onClick={() => setEnlargedMockup(null)}>
+          <button className="mockup-lightbox-close" type="button" onClick={() => setEnlargedMockup(null)} aria-label="Close enlarged image">×</button>
+          <img src={enlargedMockup.src} alt={enlargedMockup.alt} onClick={(event) => event.stopPropagation()} />
+        </div>
+      )}
     </main>
   );
 }

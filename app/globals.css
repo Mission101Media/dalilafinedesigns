@@ -74,8 +74,15 @@ img { display:block; max-width:100%; }
 .merch-section { background:linear-gradient(180deg,#effdfa,#fffaf0); }
 .merch-photo { object-fit:contain!important; background:white; }
 .merch-grid { grid-template-columns:repeat(4,1fr); }
+.merch-grid .product-card { max-width:290px; width:100%; justify-self:center; }
+.merch-art { height:275px; }
+.merch-image-button { position:relative; width:100%; height:100%; border:0; padding:0; background:white; cursor:zoom-in; }
+.merch-zoom-hint { position:absolute; right:10px; bottom:10px; padding:6px 9px; border:2px solid var(--cocoa); border-radius:999px; color:var(--cocoa); background:rgba(255,255,255,.94); font-size:.68rem; font-weight:1000; }
 .merch-variant-label { display:block; margin:16px 5px 6px; color:#6f554b; font-size:.75rem; font-weight:1000; letter-spacing:.07em; text-transform:uppercase; }
 .merch-variant-select { width:100%; min-height:46px; border:2px solid var(--cocoa); border-radius:14px; padding:9px 38px 9px 12px; color:var(--cocoa); background:white; font:inherit; font-size:.86rem; font-weight:800; }
+.mockup-lightbox { position:fixed; z-index:100; inset:0; display:grid; place-items:center; padding:32px; background:rgba(35,15,8,.86); cursor:zoom-out; }
+.mockup-lightbox img { width:min(820px,92vw); height:min(820px,84vh); object-fit:contain; border:3px solid white; border-radius:24px; background:white; box-shadow:0 20px 70px rgba(0,0,0,.4); }
+.mockup-lightbox-close { position:fixed; z-index:101; top:22px; right:24px; width:48px; height:48px; border:2px solid white; border-radius:50%; color:white; background:var(--pink); font-size:2rem; line-height:1; cursor:pointer; }
 .section-heading { max-width:1240px; margin:0 auto 38px; display:flex; justify-content:space-between; align-items:flex-end; gap:20px; }
 .text-link { padding-bottom:5px; border-bottom:3px solid var(--pink); font-weight:900; }
 .product-grid { max-width:1240px; margin:auto; display:grid; grid-template-columns:repeat(3,1fr); gap:32px 22px; }
@@ -127,3 +134,4 @@ footer { display:grid; grid-template-columns:1.4fr repeat(3,1fr); gap:45px; padd
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}.hero-slide:not(.active){display:none}}
 @media (max-width:1000px){.merch-grid{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:390px){.merch-grid{grid-template-columns:1fr}}
+@media (max-width:720px){.merch-grid .product-card{max-width:none}.merch-art{height:230px}.mockup-lightbox{padding:18px}.mockup-lightbox-close{top:14px;right:14px}}
