@@ -37,6 +37,20 @@ type Product = {
   comingSoon?: boolean;
 };
 
+type MerchVariant = {
+  id: number;
+  name: string;
+  retailPrice: number;
+  image: string;
+};
+
+type MerchProduct = {
+  id: number;
+  name: string;
+  image: string;
+  variants: MerchVariant[];
+};
+
 const products: Product[] = [
   { name: "Heart Shape Earrings", category: "Earrings", price: "$18.00", color: "aqua", badge: "New", image: "/images/heart-shape-earrings.jpg" },
   { name: "Triple Heart Drops", category: "Earrings", price: "$20.00", color: "mint", badge: "New", image: "/images/triple-heart-earrings.jpg" },
@@ -63,7 +77,12 @@ export default function Home() {
   const [headerLogoVisible, setHeaderLogoVisible] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
-  const [checkoutStatus, setCheckoutStatus] = useState<"success" | "canceled" | "">("");
+  const [checkoutStatus, setCheckoutStatus] = useState<"success" | "canceled" | "">(() => {
+    if (typeof window === "undefined") return "";
+    const status = new URLSearchParams(window.location.search).get("checkout");
+    return status === "success" || status === "canceled" ? status : "";
+  });
+  const [merchProducts, setMerchProducts] = useState<MerchProduct[]>([]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setSlide((current) => (current + 1) % slides.length), 6500);
@@ -71,8 +90,10 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const status = new URLSearchParams(window.location.search).get("checkout");
-    if (status === "success" || status === "canceled") setCheckoutStatus(status);
+    fetch("/api/printful/products")
+      .then((response) => response.ok ? response.json() : Promise.reject())
+      .then((data: { products?: MerchProduct[] }) => setMerchProducts(data.products ?? []))
+      .catch(() => setMerchProducts([]));
   }, []);
 
   useEffect(() => {
@@ -96,8 +117,10 @@ export default function Home() {
   };
   const cartSubtotal = cart.reduce((total, name) => {
     const product = products.find((item) => item.name === name);
-    return total + (product && !product.comingSoon ? Number(product.price.replace(/[^0-9.]/g, "")) : 0);
+    const merch = merchProducts.flatMap((item) => item.variants).find((item) => `printful:${item.id}` === name);
+    return total + (product && !product.comingSoon ? Number(product.price.replace(/[^0-9.]/g, "")) : merch?.retailPrice ?? 0);
   }, 0);
+  const cartLabel = (key: string) => merchProducts.flatMap((item) => item.variants).find((item) => `printful:${item.id}` === key)?.name ?? key;
   const startCheckout = async () => {
     setCheckoutLoading(true);
     setCheckoutError("");
@@ -168,6 +191,27 @@ export default function Home() {
           {slides.map((_, index) => <button key={index} className={index === slide ? "active" : ""} onClick={() => goToSlide(index)} aria-label={`Show slide ${index + 1}`} />)}
         </div>
       </section>
+
+      {merchProducts.length > 0 && (
+        <section className="products-section merch-section section" id="merch" aria-labelledby="merch-title">
+          <div className="section-heading">
+            <div><p className="kicker">Wear the happy</p><h2 id="merch-title">Dalila Fine Designs merch</h2></div>
+            <span className="text-link">Printed & shipped by Printful</span>
+          </div>
+          <div className="product-grid">
+            {merchProducts.flatMap((product) => product.variants.map((variant) => ({ ...variant, productName: product.name, productImage: product.image }))).slice(0, 12).map((variant) => (
+              <article className="product-card" key={variant.id}>
+                <div className="product-art mint has-photo">
+                  <span className="product-badge">Logo merch</span>
+                  <img className="product-photo merch-photo" src={variant.image || variant.productImage} alt={variant.name} />
+                </div>
+                <div className="product-info"><div><p>{variant.productName}</p><h3>{variant.name}</h3><strong>${variant.retailPrice.toFixed(2)}</strong></div></div>
+                <button className="product-add-button" onClick={() => addToCart(`printful:${variant.id}`)} aria-label={`Add ${variant.name} to bag`}>Add to Bag <span>+</span></button>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="category-section section" aria-labelledby="category-title">
         <p className="kicker">Pick your happy</p>
@@ -260,7 +304,7 @@ export default function Home() {
       <aside className={cartOpen ? "cart-drawer open" : "cart-drawer"} aria-label="Shopping bag" aria-hidden={!cartOpen}>
         <div className="cart-title"><div><p className="kicker">Your picks</p><h2>Happy bag <span>({cart.length})</span></h2></div><button onClick={() => setCartOpen(false)} aria-label="Close bag">×</button></div>
         {cart.length === 0 ? <div className="empty-cart"><span>♡</span><h3>Your bag is waiting!</h3><p>Add a little color to your day.</p><button className="button button-pink" onClick={() => setCartOpen(false)}>Keep shopping</button></div> : <>
-          <div className="cart-items">{cart.map((item, index) => <div className="cart-item" key={`${item}-${index}`}><span>♥</span><p>{item}<small>Handmade with happy</small></p><button onClick={() => setCart(items => items.filter((_, i) => i !== index))} aria-label={`Remove ${item}`}>×</button></div>)}</div>
+          <div className="cart-items">{cart.map((item, index) => <div className="cart-item" key={`${item}-${index}`}><span>♥</span><p>{cartLabel(item)}<small>{item.startsWith("printful:") ? "Printed and shipped by Printful" : "Handmade with happy"}</small></p><button onClick={() => setCart(items => items.filter((_, i) => i !== index))} aria-label={`Remove ${cartLabel(item)}`}>×</button></div>)}</div>
           <div className="cart-footer">
             <div className="cart-total"><span>Subtotal</span><strong>${cartSubtotal.toFixed(2)}</strong></div>
             <p>Shipping and taxes are calculated securely by Stripe.</p>

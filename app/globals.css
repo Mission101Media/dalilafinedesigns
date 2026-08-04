@@ -71,6 +71,8 @@ img { display:block; max-width:100%; }
 .category-card h3 { margin:8px 0 4px; font-size:1.45rem; }.category-card p { margin:0; font-size:.9rem; }
 .circle-link { position:absolute; right:18px; bottom:18px; display:grid; width:36px; height:36px; place-items:center; border-radius:50%; color:white; background:var(--cocoa); }
 .products-section { background:linear-gradient(180deg,#fffaf0,#fff2f6); }
+.merch-section { background:linear-gradient(180deg,#effdfa,#fffaf0); }
+.merch-photo { object-fit:contain!important; background:white; }
 .section-heading { max-width:1240px; margin:0 auto 38px; display:flex; justify-content:space-between; align-items:flex-end; gap:20px; }
 .text-link { padding-bottom:5px; border-bottom:3px solid var(--pink); font-weight:900; }
 .product-grid { max-width:1240px; margin:auto; display:grid; grid-template-columns:repeat(3,1fr); gap:32px 22px; }
