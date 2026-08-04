@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { getPrintfulVariant } from "@/lib/printful";
 
 const catalog = {
   "Heart Shape Earrings": { unitAmount: 1800, description: "Handmade blue heart earrings" },
@@ -19,27 +20,41 @@ export async function POST(request: Request) {
       return Response.json({ error: "Your bag is empty or contains too many items." }, { status: 400 });
     }
 
-    const quantities = new Map<ProductName, number>();
+    const quantities = new Map<string, number>();
     for (const value of body.items) {
-      if (typeof value !== "string" || !(value in catalog)) {
+      if (typeof value !== "string" || (!(value in catalog) && !/^printful:\d+$/.test(value))) {
         return Response.json({ error: "Your bag contains an unavailable product." }, { status: 400 });
       }
-      const name = value as ProductName;
-      quantities.set(name, (quantities.get(name) ?? 0) + 1);
+      quantities.set(value, (quantities.get(value) ?? 0) + 1);
+    }
+
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
+    for (const [key, quantity] of quantities) {
+      if (key in catalog) {
+        const name = key as ProductName;
+        lineItems.push({ quantity, price_data: { currency: "usd", unit_amount: catalog[name].unitAmount, product_data: { name, description: catalog[name].description } } });
+      } else {
+        const variant = await getPrintfulVariant(Number(key.split(":")[1]));
+        lineItems.push({
+          quantity,
+          price_data: {
+            currency: "usd",
+            unit_amount: Math.round(variant.retailPrice * 100),
+            product_data: {
+              name: variant.name,
+              images: variant.image ? [variant.image] : undefined,
+              metadata: { fulfillment: "printful", printful_sync_variant_id: String(variant.id) },
+            },
+          },
+        });
+      }
     }
 
     const stripe = new Stripe(secretKey, { httpClient: Stripe.createFetchHttpClient() });
     const origin = new URL(request.url).origin;
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      line_items: Array.from(quantities, ([name, quantity]) => ({
-        quantity,
-        price_data: {
-          currency: "usd",
-          unit_amount: catalog[name].unitAmount,
-          product_data: { name, description: catalog[name].description },
-        },
-      })),
+      line_items: lineItems,
       success_url: `${origin}/?checkout=success&session_id={CHECKOUT_SESSION_ID}#shop`,
       cancel_url: `${origin}/?checkout=canceled#shop`,
       shipping_address_collection: { allowed_countries: ["US"] },
